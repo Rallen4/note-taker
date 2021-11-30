@@ -46,9 +46,9 @@ app.post("/api/notes", (req, res)=>{
     db.push(newNote)
     console.log(db)
     fs.writeFileSync("./db/db.json", JSON.stringify(db,null,4))
-    res.send("I did the thing...")
+    res.send("Time to take your own notes seriously")
 })
 
 app.listen( PORT, ()=>{
-    console.log(`we are working here at ${PORT}`)
+    console.log(`System fired up on ${PORT}`)
 })
