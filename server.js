@@ -1,27 +1,54 @@
- const express = require("express");
- const path = require("path");
- const { clog } = require("./middleware/clog");
-//  const api = require('./routes/index.js');
+const express = require("express");
+const path = require("path");
+const app = express();
+const db = require("./db/db.json")
+const generateUUId = require("unique-identifier")
+const fs = require("fs")
+// console.log(db)
 
- const PORT = 3001;
+const PORT = process.env.PORT || 3000;
 
- const app = express();
+app.use(express.static("public"))
 
- app.use(clog);
+app.use(express.urlencoded({extended:true}))
+app.use(express.json())
 
- app.use(express.json());
- app.use(express.urlencoded({ extended: true }));
-//  app.use("/", api);
+app.get("/", (req, res)=>{
+    res.sendFile(path.join(__dirname, `./public/index.html`))
+})
 
- app.use(express.static("public"));
+app.get("/notes", (req, res)=>{
+    res.sendFile(path.join(__dirname, `./public/notes.html`))
+})
 
- app.get("/notes", (req, res) => 
-    res.sendFile(path.join(__dirname, "/public/js/index.html"))
-);
+app.get("/api/notes/", (req, res)=>{
+    res.sendFile(path.join(__dirname, `./db/db.json`))
+})
 
-app.get("/feedback", (req, res) => 
-    res.sendFile(path.join(__dirname, "/public/js/index.html"))
-);
+app.delete("/api/notes/:id", (req,res)=>{
+    console.log(req.params)
+    const id = req.params.id
+    const newList = db.filter(note=> note.id != id)
+    console.log(newList)
+    fs.writeFileSync("./db/db.json", JSON.stringify(newList,null,4))
 
-app.listen(PORT, () =>
-console.log(`App listening at http://localhost:${PORT} 🚀`))
+    res.json({"notes": "deletes"})
+})
+
+app.post("/api/notes", (req, res)=>{
+    console.log(req.body);
+    uniqueVal = generateUUId()
+    const newNote = {
+        title: req.body.title,
+        text: req.body.text,
+        id: uniqueVal,
+    }
+    db.push(newNote)
+    console.log(db)
+    fs.writeFileSync("./db/db.json", JSON.stringify(db,null,4))
+    res.send("I did the thing...")
+})
+
+app.listen( PORT, ()=>{
+    console.log(`we are working here at ${PORT}`)
+})
